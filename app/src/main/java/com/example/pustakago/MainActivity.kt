@@ -12,6 +12,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.pustakago.ui.theme.PustakaGoTheme
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
+import com.example.pustakago.ui.components.Navbar
+import com.example.pustakago.ui.navigation.NavigationGraph
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -25,6 +29,15 @@ class MainActivity : ComponentActivity() {
                         modifier = Modifier.padding(innerPadding)
                     )
                 }
+                val  navController = rememberNavController()
+                Scaffold(
+                    bottomBar = { Navbar(navController)}
+                ) { innerPadding ->
+                    NavigationGraph(
+                        navController = navController,
+                        contentPadding = innerPadding
+                    )
+                    }
             }
         }
     }
