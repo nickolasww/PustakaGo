@@ -18,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -26,6 +27,8 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import coil.compose.AsyncImage
+import com.example.pustakago.data.model.BookDto
 import com.example.pustakago.ui.theme.Poppins
 import com.example.pustakago.ui.theme.PustakaGoTheme
 
@@ -34,13 +37,6 @@ val HeaderBlue = Color(0xFF0096DB)
 val DarkText = Color(0xFF212121)
 val GrayText = Color(0xFF9E9E9E)
 val PrimaryBlue = Color(0xFF007BFF)
-
-// Data class for Book
-data class Book(
-    val imageRes: Int,
-    val title: String,
-    val year: String
-)
 
 @Composable
 fun HomeScreen(
@@ -62,13 +58,31 @@ fun HomeScreen(
             userName = state.userName,
             onProfileClick = {
                 if (state.isLoggedIn) {
-                    // Show profile or logout option
                     viewModel.logout()
                 } else {
                     navController.navigate("register")
                 }
             }
         )
+
+        // Loading indicator
+        if (state.isLoading) {
+            Box(
+                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(color = HeaderBlue)
+            }
+        }
+
+        // Error message
+        state.error?.let { error ->
+            Text(
+                text = error,
+                color = Color.Red,
+                modifier = Modifier.padding(16.dp)
+            )
+        }
 
         // Content Section with Scroll
         Column(
@@ -78,26 +92,40 @@ fun HomeScreen(
                 .padding(horizontal = 20.dp, vertical = 24.dp)
         ) {
             // Section 1: Eksplorasi ilmu sains!
-            BookSection(
-                title = "Eksplorasi ilmu sains!",
-                books = state.scienceBooks.ifEmpty { getScienceBooks() }
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
+            if (state.scienceBooks.isNotEmpty()) {
+                BookSection(
+                    title = "Eksplorasi ilmu sains!",
+                    books = state.scienceBooks
+                )
+                Spacer(modifier = Modifier.height(24.dp))
+            }
 
             // Section 2: Memperdalam pemahaman
-            BookSection(
-                title = "Memperdalam pemahaman",
-                books = state.philosophyBooks.ifEmpty { getPhilosophyBooks() }
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
+            if (state.philosophyBooks.isNotEmpty()) {
+                BookSection(
+                    title = "Memperdalam pemahaman",
+                    books = state.philosophyBooks
+                )
+                Spacer(modifier = Modifier.height(24.dp))
+            }
 
             // Section 3: Mencekam dan merinding!
-            BookSection(
-                title = "Mencekam dan merinding!",
-                books = state.horrorBooks.ifEmpty { getHorrorBooks() }
-            )
+            if (state.horrorBooks.isNotEmpty()) {
+                BookSection(
+                    title = "Mencekam dan merinding!",
+                    books = state.horrorBooks
+                )
+                Spacer(modifier = Modifier.height(24.dp))
+            }
+
+            // Show all books if no category books loaded
+            if (state.scienceBooks.isEmpty() && state.philosophyBooks.isEmpty() &&
+                state.horrorBooks.isEmpty() && state.allBooks.isNotEmpty()) {
+                BookSection(
+                    title = "Semua Buku",
+                    books = state.allBooks
+                )
+            }
 
             Spacer(modifier = Modifier.height(80.dp)) // Space for bottom nav
         }
@@ -168,7 +196,6 @@ fun HeaderSection(
 
             // Profile/Register Button
             if (isLoggedIn) {
-                // Show Profile Icon when logged in
                 Box(
                     modifier = Modifier
                         .size(48.dp)
@@ -195,7 +222,6 @@ fun HeaderSection(
                     }
                 }
             } else {
-                // Show Register Button when not logged in
                 Button(
                     onClick = { onProfileClick() },
                     modifier = Modifier.height(48.dp),
@@ -218,7 +244,7 @@ fun HeaderSection(
 @Composable
 fun BookSection(
     title: String,
-    books: List<Book>
+    books: List<BookDto>
 ) {
     Column {
         // Section Title
@@ -243,7 +269,7 @@ fun BookSection(
 }
 
 @Composable
-fun BookCard(book: Book) {
+fun BookCard(book: BookDto) {
     Column(
         modifier = Modifier.width(120.dp)
     ) {
@@ -255,17 +281,26 @@ fun BookCard(book: Book) {
                 .clip(RoundedCornerShape(12.dp))
                 .background(Color(0xFFE0E0E0))
         ) {
-            // Placeholder for book image
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color(0xFFBDBDBD)),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "📚",
-                    fontSize = 40.sp
+            if (book.imageUrl.isNotEmpty()) {
+                AsyncImage(
+                    model = book.imageUrl,
+                    contentDescription = book.title,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
                 )
+            } else {
+                // Placeholder for book image
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color(0xFFBDBDBD)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "📚",
+                        fontSize = 40.sp
+                    )
+                }
             }
         }
 
@@ -282,39 +317,34 @@ fun BookCard(book: Book) {
             overflow = TextOverflow.Ellipsis
         )
 
-        // Book Year
+        // Book Author and Year
         Text(
-            text = book.year,
+            text = "${book.author} • ${book.year}",
             fontSize = 12.sp,
             color = GrayText,
-            fontFamily = Poppins
+            fontFamily = Poppins,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
         )
+
+        // Rating
+        if (book.rating > 0) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "⭐",
+                    fontSize = 12.sp
+                )
+                Text(
+                    text = " ${book.rating}",
+                    fontSize = 12.sp,
+                    color = GrayText,
+                    fontFamily = Poppins
+                )
+            }
+        }
     }
-}
-
-// Sample data functions
-fun getScienceBooks(): List<Book> {
-    return listOf(
-        Book(0, "Kosmos", "1980"),
-        Book(0, "Astrophysics for…", "2017"),
-        Book(0, "A Brief History…", "1980")
-    )
-}
-
-fun getPhilosophyBooks(): List<Book> {
-    return listOf(
-        Book(0, "Sophie's World", "1991"),
-        Book(0, "Filosofi Teras", "2018"),
-        Book(0, "Sejarah Filsafat…", "1945")
-    )
-}
-
-fun getHorrorBooks(): List<Book> {
-    return listOf(
-        Book(0, "It", "1986"),
-        Book(0, "Dracula", "1897"),
-        Book(0, "Danur", "2011")
-    )
 }
 
 @Preview(showBackground = true, device = "spec:width=411dp,height=891dp")
