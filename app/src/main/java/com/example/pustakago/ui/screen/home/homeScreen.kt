@@ -2,25 +2,46 @@ package com.example.pustakago.ui.screen.home
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
+import com.example.pustakago.R
+import com.example.pustakago.ui.theme.Poppins
+import com.example.pustakago.ui.theme.PustakaGoTheme
+
+// Colors
+val HeaderBlue = Color(0xFF0096DB)
+val DarkText = Color(0xFF212121)
+val GrayText = Color(0xFF9E9E9E)
+
+// Data class for Book
+data class Book(
+    val imageRes: Int,
+    val title: String,
+    val year: String
+)
 
 @Composable
 fun HomeScreen(navController: NavHostController) {
@@ -31,167 +52,236 @@ fun HomeScreen(navController: NavHostController) {
             .fillMaxSize()
             .background(Color.White)
     ) {
+        // Header with Search Bar
+        HeaderSection(
+            search = search,
+            onSearchChange = { search = it }
+        )
 
-        Box(
+        // Content Section with Scroll
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .height(100.dp)
-                .background(
-                    color = Color(0xFF0096DB),
-                    shape = RoundedCornerShape(
-                        bottomStart = 20.dp,
-                        bottomEnd = 20.dp
-                    )
-                )
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 20.dp, vertical = 24.dp)
         ) {
-
-            // Jika kamu punya asset background bulat → tinggal masukkan:
-            // Image(
-            //     painter = painterResource(R.drawable.header_background),
-            //     contentDescription = null,
-            //     modifier = Modifier.fillMaxSize(),
-            //     contentScale = ContentScale.Crop
-            // )
-
-           Box(modifier = Modifier
-               .fillMaxSize()
-               .padding(vertical = 20.dp, horizontal = 20.dp)
-
-           ){
-               SearchBar(
-                   text = search,
-                   onTextChange = { search = it },
-                   modifier = Modifier
-                       .padding(horizontal = 20.dp)
-                       .align(Alignment.Center)
-                       .offset(y = 28.dp)
-               )
-           }
-        }
-
-        Spacer(Modifier.height(24.dp))
-
-
-    Column (
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 20.dp)
-    ){
-
-        // SECTION 1 -----------------------
-        SectionTitle(title = "Eksplorasi ilmu sains!")
-        BookRow(
-            books = listOf(
-//                Triple(R.drawable.book_kosmos, "Kosmos", "1980"),
-//                Triple(R.drawable.book_tyson, "Astrophysics for…", "2017"),
-//                Triple(R.drawable.book_hawking, "A Brief History…", "1980")
+            // Section 1: Eksplorasi ilmu sains!
+            BookSection(
+                title = "Eksplorasi ilmu sains!",
+                books = getScienceBooks()
             )
-        )
 
+            Spacer(modifier = Modifier.height(24.dp))
 
-        Spacer(Modifier.height(24.dp))
-
-        // SECTION 2 -----------------------
-        SectionTitle(title = "Memperdalam pemahaman")
-        BookRow(
-            books = listOf(
-//                Triple(R.drawable.book_sophie, "Sophie’s World", "1991"),
-//                Triple(R.drawable.book_terras, "Filosofi Teras", "2018"),
-//                Triple(R.drawable.book_filsafat, "Sejarah Filsafat…", "1945")
+            // Section 2: Memperdalam pemahaman
+            BookSection(
+                title = "Memperdalam pemahaman",
+                books = getPhilosophyBooks()
             )
-        )
 
-        Spacer(Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
-        // SECTION 3 -----------------------
-        SectionTitle(title = "Mencekam dan merinding!")
-        BookRow(
-            books = listOf(
-//                Triple(R.drawable.book_it, "It", "1986"),
-//                Triple(R.drawable.book_dracula, "Dracula", "1897"),
-//                Triple(R.drawable.book_danur, "Danur", "2011")
+            // Section 3: Mencekam dan merinding!
+            BookSection(
+                title = "Mencekam dan merinding!",
+                books = getHorrorBooks()
             )
-        )
 
+            Spacer(modifier = Modifier.height(80.dp)) // Space for bottom nav
         }
     }
 }
 
-
 @Composable
-fun SearchBar(
-    text: String,
-    onTextChange: (String) -> Unit,
-    modifier: Modifier
+fun HeaderSection(
+    search: String,
+    onSearchChange: (String) -> Unit
 ) {
-    TextField(
-        value = text,
-        onValueChange = onTextChange,
-        leadingIcon = {
-            Icon(Icons.Default.Search, contentDescription = null)
-        },
-        placeholder = { Text("Cari buku sekarang!") },
-        shape = RoundedCornerShape(15.dp),
-        colors = TextFieldDefaults.colors(
-            focusedContainerColor = Color.White,
-            unfocusedContainerColor = Color.White,
-            disabledContainerColor = Color.White,
-
-            focusedIndicatorColor = Color.Transparent,
-            unfocusedIndicatorColor = Color.Transparent,
-            disabledIndicatorColor = Color.Transparent,
-            errorIndicatorColor = Color.Transparent,
-        ),
+    Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(56.dp)
-    )
-}
-
-
-@Composable
-fun SectionTitle(title: String) {
-    Text(
-        text = title,
-        fontSize = 18.sp,
-        fontWeight = FontWeight.Bold,
-        modifier = Modifier.padding(start = 4.dp)
-    )
-}
-
-@Composable
-fun BookRow(books: List<Triple<Int, String, String>>) {
-    LazyRow(
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
-        modifier = Modifier.padding(top = 12.dp)
+            .height(140.dp)
+            .background(
+                color = HeaderBlue,
+                shape = RoundedCornerShape(
+                    bottomStart = 24.dp,
+                    bottomEnd = 24.dp
+                )
+            )
     ) {
-        items(books.size) { index ->
-            val (image, title, year) = books[index]
-            Column(
-                modifier = Modifier.width(120.dp)
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp)
+                .padding(top = 40.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Search Bar
+            TextField(
+                value = search,
+                onValueChange = onSearchChange,
+                leadingIcon = {
+                    Icon(
+                        Icons.Default.Search,
+                        contentDescription = "Search",
+                        tint = GrayText
+                    )
+                },
+                placeholder = {
+                    Text(
+                        "Cari buku sekarang!",
+                        color = GrayText,
+                        fontFamily = Poppins
+                    )
+                },
+                shape = RoundedCornerShape(12.dp),
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = Color.White,
+                    unfocusedContainerColor = Color.White,
+                    disabledContainerColor = Color.White,
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent,
+                    disabledIndicatorColor = Color.Transparent
+                ),
+                modifier = Modifier
+                    .weight(1f)
+                    .height(56.dp),
+                singleLine = true
+            )
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            // Profile Icon
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(CircleShape)
+                    .background(Color.White),
+                contentAlignment = Alignment.Center
             ) {
-                Image(
-                    painter = painterResource(id = image),
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .height(150.dp)
-                        .fillMaxWidth()
-                        .background(Color.LightGray, RoundedCornerShape(12.dp))
-                )
-                Spacer(Modifier.height(8.dp))
-                Text(
-                    text = title,
-                    fontSize = 14.sp,
-                    maxLines = 1,
-                    fontWeight = FontWeight.Medium
-                )
-                Text(
-                    text = year,
-                    fontSize = 12.sp,
-                    color = Color.Gray
+                Icon(
+                    Icons.Default.Person,
+                    contentDescription = "Profile",
+                    tint = HeaderBlue,
+                    modifier = Modifier.size(28.dp),
                 )
             }
         }
+    }
+}
+
+@Composable
+fun BookSection(
+    title: String,
+    books: List<Book>
+) {
+    Column {
+        // Section Title
+        Text(
+            text = title,
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold,
+            color = DarkText,
+            fontFamily = Poppins,
+            modifier = Modifier.padding(bottom = 12.dp)
+        )
+
+        // Book Row
+        LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            items(books) { book ->
+                BookCard(book = book)
+            }
+        }
+    }
+}
+
+@Composable
+fun BookCard(book: Book) {
+    Column(
+        modifier = Modifier.width(120.dp)
+    ) {
+        // Book Cover
+        Box(
+            modifier = Modifier
+                .height(160.dp)
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(12.dp))
+                .background(Color(0xFFE0E0E0))
+        ) {
+            // Placeholder for book image
+            // When you have actual images, use:
+            // Image(
+            //     painter = painterResource(id = book.imageRes),
+            //     contentDescription = book.title,
+            //     contentScale = ContentScale.Crop,
+            //     modifier = Modifier.fillMaxSize()
+            // )
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color(0xFFBDBDBD)),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "📚",
+                    fontSize = 40.sp
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Book Title
+        Text(
+            text = book.title,
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Medium,
+            color = DarkText,
+            fontFamily = Poppins,
+            maxLines = 1
+        )
+
+        // Book Year
+        Text(
+            text = book.year,
+            fontSize = 12.sp,
+            color = GrayText,
+            fontFamily = Poppins
+        )
+    }
+}
+
+// Sample data functions
+fun getScienceBooks(): List<Book> {
+    return listOf(
+        Book(0, "Kosmos", "1980"),
+        Book(0, "Astrophysics for…", "2017"),
+        Book(0, "A Brief History…", "1980")
+    )
+}
+
+fun getPhilosophyBooks(): List<Book> {
+    return listOf(
+        Book(0, "Sophie's World", "1991"),
+        Book(0, "Filosofi Teras", "2018"),
+        Book(0, "Sejarah Filsafat…", "1945")
+    )
+}
+
+fun getHorrorBooks(): List<Book> {
+    return listOf(
+        Book(0, "It", "1986"),
+        Book(0, "Dracula", "1897"),
+        Book(0, "Danur", "2011")
+    )
+}
+
+@Preview(showBackground = true, device = "spec:width=411dp,height=891dp")
+@Composable
+fun HomeScreenPreview() {
+    PustakaGoTheme {
+        HomeScreen(navController = rememberNavController())
     }
 }
