@@ -27,17 +27,12 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.pustakago.R
 import com.example.pustakago.ui.theme.PustakaGoTheme
-
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
-import com.example.pustakago.R.font
 import com.example.pustakago.ui.theme.Poppins
-import androidx.navigation.NavHostController
 
 val PrimaryBlue = Color(0xFF007BFF)
 val GrayText = Color(0xFF9E9E9E)
@@ -46,10 +41,21 @@ val ButtonColor = Color(0xFF0F8CD6)
 
 
 @Composable
-fun LoginScreen(navController: NavController) {
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var rememberMe by remember { mutableStateOf(false) }
+fun LoginScreen(
+    navController: NavController,
+    viewModel: LoginViewModel = viewModel()
+) {
+    val state by viewModel.state.collectAsState()
+
+    // Navigate to home on success
+    LaunchedEffect(state.isSuccess) {
+        if (state.isSuccess) {
+            navController.navigate("home") {
+                popUpTo("login") { inclusive = true }
+            }
+            viewModel.resetState()
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -66,7 +72,6 @@ fun LoginScreen(navController: NavController) {
             contentDescription = "Pustaka GO Logo",
             modifier = Modifier.size(120.dp)
         )
-
 
         Spacer(modifier = Modifier.height(32.dp))
 
@@ -96,6 +101,23 @@ fun LoginScreen(navController: NavController) {
 
         Spacer(modifier = Modifier.height(32.dp))
 
+        // Error Message
+        state.error?.let { error ->
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFFFFEBEE))
+            ) {
+                Text(
+                    text = error,
+                    color = Color(0xFFB71C1C),
+                    modifier = Modifier.padding(16.dp),
+                    fontFamily = Poppins,
+                    fontSize = 14.sp
+                )
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+
         // Email Field
         Column(
             modifier = Modifier.fillMaxWidth(),
@@ -110,8 +132,8 @@ fun LoginScreen(navController: NavController) {
             )
             Spacer(modifier = Modifier.height(8.dp))
             OutlinedTextField(
-                value = email,
-                onValueChange = { email = it },
+                value = state.email,
+                onValueChange = { viewModel.onEmailChange(it) },
                 placeholder = { Text("Masukkan email anda", color = GrayText) },
                 leadingIcon = {
                     Icon(
@@ -127,7 +149,8 @@ fun LoginScreen(navController: NavController) {
                     focusedBorderColor = PrimaryBlue
                 ),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                singleLine = true
+                singleLine = true,
+                enabled = !state.isLoading
             )
         }
 
@@ -147,8 +170,8 @@ fun LoginScreen(navController: NavController) {
             )
             Spacer(modifier = Modifier.height(8.dp))
             OutlinedTextField(
-                value = password,
-                onValueChange = { password = it },
+                value = state.password,
+                onValueChange = { viewModel.onPasswordChange(it) },
                 placeholder = { Text("Masukkan sandi anda", color = GrayText) },
                 leadingIcon = {
                     Icon(
@@ -165,7 +188,8 @@ fun LoginScreen(navController: NavController) {
                 ),
                 visualTransformation = PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                singleLine = true
+                singleLine = true,
+                enabled = !state.isLoading
             )
         }
 
@@ -177,13 +201,14 @@ fun LoginScreen(navController: NavController) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Checkbox(
-                checked = rememberMe,
-                onCheckedChange = { rememberMe = it },
+                checked = state.rememberMe,
+                onCheckedChange = { viewModel.onRememberMeChange(it) },
                 colors = CheckboxDefaults.colors(
                     checkedColor = PrimaryBlue,
                     uncheckedColor = PrimaryBlue,
                     checkmarkColor = Color.White
-                )
+                ),
+                enabled = !state.isLoading
             )
             Text(
                 text = "Ingat saya",
@@ -196,21 +221,29 @@ fun LoginScreen(navController: NavController) {
         Spacer(modifier = Modifier.height(16.dp))
 
         // Login Button
-        Box(
+        Button(
+            onClick = { viewModel.onLogin() },
             modifier = Modifier
                 .fillMaxWidth()
-                .height(52.dp)
-                .background(ButtonColor, RoundedCornerShape(8.dp))
-                .clickable { /* Handle login */ },
-            contentAlignment = Alignment.Center
+                .height(52.dp),
+            shape = RoundedCornerShape(8.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = ButtonColor),
+            enabled = !state.isLoading
         ) {
-            Text(
-                text = "Masuk",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = Color.White,
-                fontFamily = Poppins
-            )
+            if (state.isLoading) {
+                CircularProgressIndicator(
+                    color = Color.White,
+                    modifier = Modifier.size(24.dp)
+                )
+            } else {
+                Text(
+                    text = "Masuk",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color.White,
+                    fontFamily = Poppins
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -239,7 +272,8 @@ fun LoginScreen(navController: NavController) {
                 .fillMaxWidth()
                 .height(52.dp),
             shape = RoundedCornerShape(8.dp),
-            border = ButtonDefaults.outlinedButtonBorder.copy(width = 1.dp)
+            border = ButtonDefaults.outlinedButtonBorder.copy(width = 1.dp),
+            enabled = !state.isLoading
         ) {
             Image(
                 painter = painterResource(id = R.drawable.google_logo),
@@ -273,7 +307,9 @@ fun LoginScreen(navController: NavController) {
                 fontSize = 14.sp,
                 color = PrimaryBlue,
                 fontWeight = FontWeight.SemiBold,
-                modifier = Modifier.clickable { navController.navigate("register") },
+                modifier = Modifier.clickable {
+                    navController.navigate("register")
+                },
                 fontFamily = Poppins
             )
         }

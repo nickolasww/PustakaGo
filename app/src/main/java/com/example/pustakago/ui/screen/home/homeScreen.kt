@@ -1,6 +1,5 @@
 package com.example.pustakago.ui.screen.home
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -19,15 +18,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import com.example.pustakago.R
 import com.example.pustakago.ui.theme.Poppins
 import com.example.pustakago.ui.theme.PustakaGoTheme
 
@@ -35,6 +33,7 @@ import com.example.pustakago.ui.theme.PustakaGoTheme
 val HeaderBlue = Color(0xFF0096DB)
 val DarkText = Color(0xFF212121)
 val GrayText = Color(0xFF9E9E9E)
+val PrimaryBlue = Color(0xFF007BFF)
 
 // Data class for Book
 data class Book(
@@ -44,8 +43,11 @@ data class Book(
 )
 
 @Composable
-fun HomeScreen(navController: NavHostController) {
-    var search by remember { mutableStateOf("") }
+fun HomeScreen(
+    navController: NavHostController,
+    viewModel: HomeViewModel = viewModel()
+) {
+    val state by viewModel.state.collectAsState()
 
     Column(
         modifier = Modifier
@@ -54,8 +56,18 @@ fun HomeScreen(navController: NavHostController) {
     ) {
         // Header with Search Bar
         HeaderSection(
-            search = search,
-            onSearchChange = { search = it }
+            search = state.searchQuery,
+            onSearchChange = { viewModel.onSearchQueryChange(it) },
+            isLoggedIn = state.isLoggedIn,
+            userName = state.userName,
+            onProfileClick = {
+                if (state.isLoggedIn) {
+                    // Show profile or logout option
+                    viewModel.logout()
+                } else {
+                    navController.navigate("register")
+                }
+            }
         )
 
         // Content Section with Scroll
@@ -68,7 +80,7 @@ fun HomeScreen(navController: NavHostController) {
             // Section 1: Eksplorasi ilmu sains!
             BookSection(
                 title = "Eksplorasi ilmu sains!",
-                books = getScienceBooks()
+                books = state.scienceBooks.ifEmpty { getScienceBooks() }
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -76,7 +88,7 @@ fun HomeScreen(navController: NavHostController) {
             // Section 2: Memperdalam pemahaman
             BookSection(
                 title = "Memperdalam pemahaman",
-                books = getPhilosophyBooks()
+                books = state.philosophyBooks.ifEmpty { getPhilosophyBooks() }
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -84,7 +96,7 @@ fun HomeScreen(navController: NavHostController) {
             // Section 3: Mencekam dan merinding!
             BookSection(
                 title = "Mencekam dan merinding!",
-                books = getHorrorBooks()
+                books = state.horrorBooks.ifEmpty { getHorrorBooks() }
             )
 
             Spacer(modifier = Modifier.height(80.dp)) // Space for bottom nav
@@ -95,7 +107,10 @@ fun HomeScreen(navController: NavHostController) {
 @Composable
 fun HeaderSection(
     search: String,
-    onSearchChange: (String) -> Unit
+    onSearchChange: (String) -> Unit,
+    isLoggedIn: Boolean,
+    userName: String?,
+    onProfileClick: () -> Unit
 ) {
     Box(
         modifier = Modifier
@@ -151,20 +166,50 @@ fun HeaderSection(
 
             Spacer(modifier = Modifier.width(12.dp))
 
-            // Profile Icon
-            Box(
-                modifier = Modifier
-                    .size(48.dp)
-                    .clip(CircleShape)
-                    .background(Color.White),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    Icons.Default.Person,
-                    contentDescription = "Profile",
-                    tint = HeaderBlue,
-                    modifier = Modifier.size(28.dp),
-                )
+            // Profile/Register Button
+            if (isLoggedIn) {
+                // Show Profile Icon when logged in
+                Box(
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(CircleShape)
+                        .background(Color.White)
+                        .clickable { onProfileClick() },
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (userName != null && userName.isNotEmpty()) {
+                        Text(
+                            text = userName.first().uppercase(),
+                            color = HeaderBlue,
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = Poppins
+                        )
+                    } else {
+                        Icon(
+                            Icons.Default.Person,
+                            contentDescription = "Profile",
+                            tint = HeaderBlue,
+                            modifier = Modifier.size(28.dp)
+                        )
+                    }
+                }
+            } else {
+                // Show Register Button when not logged in
+                Button(
+                    onClick = { onProfileClick() },
+                    modifier = Modifier.height(48.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.White)
+                ) {
+                    Text(
+                        text = "Daftar",
+                        color = HeaderBlue,
+                        fontWeight = FontWeight.SemiBold,
+                        fontFamily = Poppins,
+                        fontSize = 14.sp
+                    )
+                }
             }
         }
     }
@@ -211,13 +256,6 @@ fun BookCard(book: Book) {
                 .background(Color(0xFFE0E0E0))
         ) {
             // Placeholder for book image
-            // When you have actual images, use:
-            // Image(
-            //     painter = painterResource(id = book.imageRes),
-            //     contentDescription = book.title,
-            //     contentScale = ContentScale.Crop,
-            //     modifier = Modifier.fillMaxSize()
-            // )
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -240,7 +278,8 @@ fun BookCard(book: Book) {
             fontWeight = FontWeight.Medium,
             color = DarkText,
             fontFamily = Poppins,
-            maxLines = 1
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
         )
 
         // Book Year

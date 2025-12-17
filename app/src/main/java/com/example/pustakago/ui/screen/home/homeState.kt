@@ -6,5 +6,8 @@ data class HomeState(
     val philosophyBooks: List<Book> = emptyList(),
     val horrorBooks: List<Book> = emptyList(),
     val isLoading: Boolean = false,
-    val error: String? = null
+    val error: String? = null,
+    val isLoggedIn: Boolean = false,
+    val userName: String? = null,
+    val userEmail: String? = null
 )
