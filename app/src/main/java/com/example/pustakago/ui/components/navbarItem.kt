@@ -3,18 +3,34 @@ package com.example.pustakago.ui.components
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Bookmark
-import androidx.compose.material.icons.filled.Group
+import androidx.compose.material.icons.filled.Groups
+import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.BookmarkBorder
+import androidx.compose.material.icons.outlined.Groups
 import androidx.compose.ui.graphics.vector.ImageVector
-
-
 
 sealed class BottomNavItem(
     val route: String,
     val label: String,
-    val icon: ImageVector
+    val selectedIcon: ImageVector,
+    val unselectedIcon: ImageVector
 ) {
-    object Home : BottomNavItem("home", "Home", Icons.Default.Home)
-    object Group : BottomNavItem("group", "Group", Icons.Default.Group)
-    object Mark : BottomNavItem("mark", "Mark", Icons.Default.Bookmark)
-    object Profile: BottomNavItem("profile", "Profile", Icons.Default.Bookmark)
+    object Home : BottomNavItem(
+        route = "home",
+        label = "Beranda",
+        selectedIcon = Icons.Filled.Home,
+        unselectedIcon = Icons.Outlined.Home
+    )
+    object Group : BottomNavItem(
+        route = "group",
+        label = "Grup",
+        selectedIcon = Icons.Filled.Groups,
+        unselectedIcon = Icons.Outlined.Groups
+    )
+    object Mark : BottomNavItem(
+        route = "mark",
+        label = "Tandai",
+        selectedIcon = Icons.Filled.Bookmark,
+        unselectedIcon = Icons.Outlined.BookmarkBorder
+    )
 }
