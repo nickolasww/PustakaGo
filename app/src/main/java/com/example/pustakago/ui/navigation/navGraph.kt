@@ -10,6 +10,7 @@ import androidx.navigation.compose.composable
 import com.example.pustakago.ui.screen.group.GroupScreen
 import com.example.pustakago.ui.screen.home.HomeScreen
 import com.example.pustakago.ui.screen.mark.MarkScreen
+import com.example.pustakago.ui.screen.login.LoginScreen
 
 @Composable
 fun NavigationGraph(
@@ -30,6 +31,9 @@ fun NavigationGraph(
         }
         composable(Routes.MARK) {
             MarkScreen(navController)
+        }
+        composable(Routes.LOGIN) {
+            LoginScreen(navController)
         }
     }
 }
