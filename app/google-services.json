@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "288419672726",
+    "project_id": "pustakago",
+    "storage_bucket": "pustakago.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:288419672726:android:d97535cc4144e421e6c8b7",
+        "android_client_info": {
+          "package_name": "com.example.pustakago"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCjAct8XIVIiFoNl3c1PnW-RbNSPweHL4c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
