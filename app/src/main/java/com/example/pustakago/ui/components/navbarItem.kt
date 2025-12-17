@@ -16,4 +16,5 @@ sealed class BottomNavItem(
     object Home : BottomNavItem("home", "Home", Icons.Default.Home)
     object Group : BottomNavItem("group", "Group", Icons.Default.Group)
     object Mark : BottomNavItem("mark", "Mark", Icons.Default.Bookmark)
+    object Profile: BottomNavItem("profile", "Profile", Icons.Default.Bookmark)
 }
