@@ -1,20 +1,8 @@
 package com.example.pustakago.depenInject
-
-// Buat meletakkan Firebase Instance nya
-//Contoh
-//@Module
-//@InstallIn(SingletonComponent::class)
-//object FirebaseModule {
+//import com.google.firebase.firestore.FirebaseFirestore
 //
-//    @Provides
-//    @Singleton
-//    fun provideFirebaseAuth(): FirebaseAuth = FirebaseAuth.getInstance()
-//
-//    @Provides
-//    @Singleton
-//    fun provideFirebaseFirestore(): FirebaseFirestore = FirebaseFirestore.getInstance()
-//
-//    @Provides
-//    @Singleton
-//    fun provideFirebaseStorage(): FirebaseStorage = FirebaseStorage.getInstance()
+//// Buat meletakkan Firebase Instance nya
+//object FirebaseService {
+//    val db = FirebaseFirestore.getInstance()
 //}
+
