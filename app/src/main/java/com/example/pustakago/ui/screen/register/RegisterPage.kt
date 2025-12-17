@@ -1,162 +1,297 @@
-//package com.example.pustakago
-//
-//import android.content.Intent
-//import android.os.Bundle
-//import android.widget.Toast
-//import androidx.activity.ComponentActivity
-//import androidx.activity.compose.setContent
-//import androidx.compose.foundation.layout.*
-//import androidx.compose.foundation.text.KeyboardOptions
-//import androidx.compose.material3.*
-//import androidx.compose.runtime.*
-//import androidx.compose.ui.Alignment
-//import androidx.compose.ui.Modifier
-//import androidx.compose.ui.platform.LocalContext
-//import androidx.compose.ui.text.input.KeyboardType
-//import androidx.compose.ui.text.input.PasswordVisualTransformation
-//import androidx.compose.ui.unit.dp
-//import com.example.pustakago.ui.theme.PustakaGoTheme
-//import com.google.firebase.auth.FirebaseAuth
-//import com.example.pustakago.
-//
-//
-//class RegisterActivity : ComponentActivity() {
-//
-//    private lateinit var auth: FirebaseAuth
-//
-//    override fun onCreate(savedInstanceState: Bundle?) {
-//        super.onCreate(savedInstanceState)
-//        auth = FirebaseAuth.getInstance()
-//
-//        setContent {
-//            // Gunakan tema Compose Anda
-//            PustakaGoTheme {
-//                Surface(
-//                    modifier = Modifier.fillMaxSize(),
-//                    color = MaterialTheme.colorScheme.background
-//                ) {
-//                    RegisterScreen(
-//                        onRegisterSuccess = {
-//                            // Kembali ke halaman login atau halaman utama setelah berhasil
-//                            // Contoh: Navigasi ke LoginActivity
-//                            startActivity(Intent(this, LoginActivity::class.java))
-//                            finish()
-//                        }
-//                    )
-//                }
-//            }
-//        }
-//    }
-//
-//    private fun registerUser(email: String, password: String, onComplete: (Boolean, String?) -> Unit) {
-//        auth.createUserWithEmailAndPassword(email, password)
-//            .addOnCompleteListener(this) { task ->
-//                if (task.isSuccessful) {
-//                    onComplete(true, null)
-//                } else {
-//                    onComplete(false, task.exception?.message ?: "Registrasi gagal")
-//                }
-//            }
-//    }
-//}
-//
-//
-//@Composable
-//fun RegisterScreen(onRegisterSuccess: () -> Unit) {
-//    val context = LocalContext.current
-//    val auth = FirebaseAuth.getInstance() // Dapatkan instance di dalam Composable
-//
-//    // State untuk menampung input pengguna
-//    var name by remember { mutableStateOf("") }
-//    var email by remember { mutableStateOf("") }
-//    var password by remember { mutableStateOf("") }
-//    var confirmPassword by remember { mutableStateOf("") }
-//    var isLoading by remember { mutableStateOf(false) }
-//
-//    // Fungsi untuk menangani logika registrasi
-//    val handleRegister = {
-//        if (name.isBlank() || email.isBlank() || password.isBlank() || confirmPassword.isBlank()) {
-//            Toast.makeText(context, "Semua field wajib diisi", Toast.LENGTH_SHORT).show()
-//        } else if (password.length < 6) {
-//            Toast.makeText(context, "Password minimal 6 karakter", Toast.LENGTH_SHORT).show()
-//        } else if (password != confirmPassword) {
-//            Toast.makeText(context, "Password tidak cocok", Toast.LENGTH_SHORT).show()
-//        } else {
-//            isLoading = true
-//            auth.createUserWithEmailAndPassword(email, password)
-//                .addOnCompleteListener { task ->
-//                    isLoading = false
-//                    if (task.isSuccessful) {
-//                        Toast.makeText(context, "Registrasi berhasil!", Toast.LENGTH_LONG).show()
-//                        onRegisterSuccess() // Panggil callback jika berhasil
-//                    } else {
-//                        val errorMessage = task.exception?.message ?: "Registrasi gagal"
-//                        Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
-//                    }
-//                }
-//        }
-//    }
-//
-//    // UI Layout dengan Jetpack Compose
-//    Column(
-//        modifier = Modifier
-//            .fillMaxSize()
-//            .padding(horizontal = 24.dp),
-//        verticalArrangement = Arrangement.Center,
-//        horizontalAlignment = Alignment.CenterHorizontally
-//    ) {
-//        Text("Daftar Akun Baru", style = MaterialTheme.typography.headlineMedium)
-//        Spacer(modifier = Modifier.height(32.dp))
-//
-//        // Input fields
-//        OutlinedTextField(
-//            value = name,
-//            onValueChange = { name = it },
-//            label = { Text("Nama Lengkap") },
-//            modifier = Modifier.fillMaxWidth()
-//        )
-//        Spacer(modifier = Modifier.height(16.dp))
-//
-//        OutlinedTextField(
-//            value = email,
-//            onValueChange = { email = it },
-//            label = { Text("Email") },
-//            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-//            modifier = Modifier.fillMaxWidth()
-//        )
-//        Spacer(modifier = Modifier.height(16.dp))
-//
-//        OutlinedTextField(
-//            value = password,
-//            onValueChange = { password = it },
-//            label = { Text("Password") },
-//            visualTransformation = PasswordVisualTransformation(),
-//            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-//            modifier = Modifier.fillMaxWidth()
-//        )
-//        Spacer(modifier = Modifier.height(16.dp))
-//
-//        OutlinedTextField(
-//            value = confirmPassword,
-//            onValueChange = { confirmPassword = it },
-//            label = { Text("Konfirmasi Password") },
-//            visualTransformation = PasswordVisualTransformation(),
-//            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-//            modifier = Modifier.fillMaxWidth()
-//        )
-//        Spacer(modifier = Modifier.height(24.dp))
-//
-//        if (isLoading) {
-//            CircularProgressIndicator()
-//        } else {
-//            Button(
-//                onClick = handleRegister,
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//                    .height(50.dp)
-//            ) {
-//                Text("Daftar")
-//            }
-//        }
-//    }
-//}
+package com.example.pustakago.ui.screen.register
+
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
+import com.example.pustakago.R
+import com.example.pustakago.ui.theme.PustakaGoTheme
+import com.example.pustakago.ui.theme.Poppins
+
+val PrimaryBlue = Color(0xFF007BFF)
+val GrayText = Color(0xFF9E9E9E)
+val DarkText = Color(0xFF212121)
+val ButtonColor = Color(0xFF0F8CD6)
+
+
+@Composable
+fun RegisterScreen(navController: NavController) {
+    var nama by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White)
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 24.dp, vertical = 32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        // Logo
+        Image(
+            painter = painterResource(id = R.drawable.logo),
+            contentDescription = "Pustaka GO Logo",
+            modifier = Modifier.size(120.dp)
+        )
+
+        Spacer(modifier = Modifier.height(32.dp))
+
+        // Title
+        Text(
+            text = buildAnnotatedString {
+                append("Selamat datang di Pustaka ")
+                withStyle(style = SpanStyle(color = PrimaryBlue)) {
+                    append("GO !")
+                }
+            },
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center,
+            color = DarkText,
+            fontFamily = Poppins
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Text(
+            text = "Daftar melalui formulir berikut.",
+            fontSize = 14.sp,
+            color = GrayText,
+            fontFamily = Poppins
+        )
+
+        Spacer(modifier = Modifier.height(32.dp))
+
+        // Nama Field
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.Start
+        ) {
+            Text(
+                text = "Nama",
+                fontSize = 14.sp,
+                color = DarkText,
+                fontWeight = FontWeight.Medium,
+                fontFamily = Poppins
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            OutlinedTextField(
+                value = nama,
+                onValueChange = { nama = it },
+                placeholder = { Text("Masukkan nama anda", color = GrayText) },
+                leadingIcon = {
+                    Icon(
+                        Icons.Default.Person,
+                        contentDescription = "Nama",
+                        tint = GrayText
+                    )
+                },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(8.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    unfocusedBorderColor = Color(0xFFE0E0E0),
+                    focusedBorderColor = PrimaryBlue
+                ),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+                singleLine = true
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Email Field
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.Start
+        ) {
+            Text(
+                text = "Email",
+                fontSize = 14.sp,
+                color = DarkText,
+                fontWeight = FontWeight.Medium,
+                fontFamily = Poppins
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            OutlinedTextField(
+                value = email,
+                onValueChange = { email = it },
+                placeholder = { Text("Masukkan email anda", color = GrayText) },
+                leadingIcon = {
+                    Icon(
+                        Icons.Default.Email,
+                        contentDescription = "Email",
+                        tint = GrayText
+                    )
+                },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(8.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    unfocusedBorderColor = Color(0xFFE0E0E0),
+                    focusedBorderColor = PrimaryBlue
+                ),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                singleLine = true
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Password Field
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.Start
+        ) {
+            Text(
+                text = "Kata Sandi",
+                fontSize = 14.sp,
+                color = DarkText,
+                fontWeight = FontWeight.Medium,
+                fontFamily = Poppins
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            OutlinedTextField(
+                value = password,
+                onValueChange = { password = it },
+                placeholder = { Text("Masukkan sandi anda", color = GrayText) },
+                leadingIcon = {
+                    Icon(
+                        Icons.Default.Lock,
+                        contentDescription = "Password",
+                        tint = GrayText
+                    )
+                },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(8.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    unfocusedBorderColor = Color(0xFFE0E0E0),
+                    focusedBorderColor = PrimaryBlue
+                ),
+                visualTransformation = PasswordVisualTransformation(),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                singleLine = true
+            )
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Register Button
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(52.dp)
+                .background(ButtonColor, RoundedCornerShape(8.dp))
+                .clickable { /* Handle register */ },
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "Daftar",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = Color.White,
+                fontFamily = Poppins
+            )
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Divider with "Atau"
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            HorizontalDivider(modifier = Modifier.weight(1f), color = Color(0xFFE0E0E0))
+            Text(
+                text = "  Atau  ",
+                fontSize = 14.sp,
+                color = GrayText,
+                fontFamily = Poppins
+            )
+            HorizontalDivider(modifier = Modifier.weight(1f), color = Color(0xFFE0E0E0))
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Google Login Button
+        OutlinedButton(
+            onClick = { /* Handle Google login */ },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(52.dp),
+            shape = RoundedCornerShape(8.dp),
+            border = ButtonDefaults.outlinedButtonBorder.copy(width = 1.dp)
+        ) {
+            Image(
+                painter = painterResource(id = R.drawable.google_logo),
+                contentDescription = "Google Logo",
+                modifier = Modifier.size(24.dp)
+            )
+            Spacer(modifier = Modifier.width(12.dp))
+            Text(
+                text = "Masuk dengan Google",
+                fontSize = 14.sp,
+                color = DarkText,
+                fontFamily = Poppins
+            )
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Login Link
+        Row(
+            horizontalArrangement = Arrangement.Center,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(
+                text = "Sudah punya akun ? ",
+                fontSize = 14.sp,
+                color = GrayText,
+                fontFamily = Poppins
+            )
+            Text(
+                text = "Masuk",
+                fontSize = 14.sp,
+                color = PrimaryBlue,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.clickable { navController.navigate("login") },
+                fontFamily = Poppins
+            )
+        }
+    }
+}
+
+
+@Preview(showBackground = true, device = "spec:width=411dp,height=891dp")
+@Composable
+fun RegisterScreenPreview() {
+    PustakaGoTheme {
+        RegisterScreen(navController = rememberNavController())
+    }
+}

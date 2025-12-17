@@ -4,6 +4,8 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -53,7 +55,8 @@ fun LoginScreen(navController: NavController) {
         modifier = Modifier
             .fillMaxSize()
             .background(Color.White)
-            .padding(horizontal = 24.dp),
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 24.dp, vertical = 32.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
@@ -71,7 +74,7 @@ fun LoginScreen(navController: NavController) {
         Text(
             text = buildAnnotatedString {
                 append("Selamat datang kembali di Pustaka ")
-                        withStyle(style = SpanStyle(color = PrimaryBlue)) {
+                withStyle(style = SpanStyle(color = PrimaryBlue)) {
                     append("GO !")
                 }
             },
@@ -217,14 +220,14 @@ fun LoginScreen(navController: NavController) {
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Divider(modifier = Modifier.weight(1f), color = Color(0xFFE0E0E0))
+            HorizontalDivider(modifier = Modifier.weight(1f), color = Color(0xFFE0E0E0))
             Text(
                 text = "  Atau  ",
                 fontSize = 14.sp,
                 color = GrayText,
                 fontFamily = Poppins
             )
-            Divider(modifier = Modifier.weight(1f), color = Color(0xFFE0E0E0))
+            HorizontalDivider(modifier = Modifier.weight(1f), color = Color(0xFFE0E0E0))
         }
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -270,7 +273,7 @@ fun LoginScreen(navController: NavController) {
                 fontSize = 14.sp,
                 color = PrimaryBlue,
                 fontWeight = FontWeight.SemiBold,
-                modifier = Modifier.clickable { /* Navigate to register */ },
+                modifier = Modifier.clickable { navController.navigate("register") },
                 fontFamily = Poppins
             )
         }

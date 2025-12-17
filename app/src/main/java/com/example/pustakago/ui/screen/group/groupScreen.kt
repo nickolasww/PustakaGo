@@ -13,7 +13,7 @@ fun GroupScreen(navController: NavHostController) {
         Text("Group Screen")
 
         Button(onClick = {
-            navController.navigate(Routes.LOGIN)
+            navController.navigate(Routes.REGISTER)
         }) {
             Text("Go To Login")
         }

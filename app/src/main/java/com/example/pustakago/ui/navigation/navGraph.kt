@@ -11,6 +11,7 @@ import com.example.pustakago.ui.screen.group.GroupScreen
 import com.example.pustakago.ui.screen.home.HomeScreen
 import com.example.pustakago.ui.screen.mark.MarkScreen
 import com.example.pustakago.ui.screen.login.LoginScreen
+import com.example.pustakago.ui.screen.register.RegisterScreen
 
 @Composable
 fun NavigationGraph(
@@ -34,6 +35,9 @@ fun NavigationGraph(
         }
         composable(Routes.LOGIN) {
             LoginScreen(navController)
+        }
+        composable(Routes.REGISTER){
+            RegisterScreen(navController)
         }
     }
 }
