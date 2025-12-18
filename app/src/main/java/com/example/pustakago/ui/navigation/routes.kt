@@ -6,4 +6,6 @@ object Routes{
     const val HOME = "home"
     const val GROUP = "group"
     const val MARK = "mark"
+    const val BOOK_DETAIL = "bookDetail"
+    const val BOOK_DETAIL_ARG = "bookId"
 }

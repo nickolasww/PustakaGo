@@ -10,5 +10,15 @@ data class BookDto(
     val pages: Int = 0,
     val description: String = "",
     val imageUrl: String = "",
-    val category: List<String> = emptyList()
+    val category: List<String> = emptyList(),
+    // Publisher information
+    val publisher: String = "",
+    val isbn: String = "",
+    val language: String = "",
+    val format: String = "",
+    // Author information
+    val authorBio: String = "",
+    val authorImageUrl: String = "",
+    // Rating distribution
+    val ratingDistribution: Map<String, Int> = emptyMap()
 )

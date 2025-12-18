@@ -29,6 +29,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import com.example.pustakago.data.model.BookDto
+import com.example.pustakago.ui.navigation.Routes
 import com.example.pustakago.ui.theme.Poppins
 import com.example.pustakago.ui.theme.PustakaGoTheme
 
@@ -60,7 +61,7 @@ fun HomeScreen(
                 if (state.isLoggedIn) {
                     viewModel.logout()
                 } else {
-                    navController.navigate("register")
+                    navController.navigate(Routes.REGISTER)
                 }
             }
         )
@@ -95,7 +96,8 @@ fun HomeScreen(
             if (state.scienceBooks.isNotEmpty()) {
                 BookSection(
                     title = "Eksplorasi ilmu sains!",
-                    books = state.scienceBooks
+                    books = state.scienceBooks,
+                    navController = navController
                 )
                 Spacer(modifier = Modifier.height(24.dp))
             }
@@ -104,7 +106,8 @@ fun HomeScreen(
             if (state.philosophyBooks.isNotEmpty()) {
                 BookSection(
                     title = "Memperdalam pemahaman",
-                    books = state.philosophyBooks
+                    books = state.philosophyBooks,
+                    navController = navController
                 )
                 Spacer(modifier = Modifier.height(24.dp))
             }
@@ -113,7 +116,8 @@ fun HomeScreen(
             if (state.horrorBooks.isNotEmpty()) {
                 BookSection(
                     title = "Mencekam dan merinding!",
-                    books = state.horrorBooks
+                    books = state.horrorBooks,
+                    navController = navController
                 )
                 Spacer(modifier = Modifier.height(24.dp))
             }
@@ -123,7 +127,8 @@ fun HomeScreen(
                 state.horrorBooks.isEmpty() && state.allBooks.isNotEmpty()) {
                 BookSection(
                     title = "Semua Buku",
-                    books = state.allBooks
+                    books = state.allBooks,
+                    navController = navController
                 )
             }
 
@@ -244,7 +249,8 @@ fun HeaderSection(
 @Composable
 fun BookSection(
     title: String,
-    books: List<BookDto>
+    books: List<BookDto>,
+    navController: NavHostController
 ) {
     Column {
         // Section Title
@@ -262,16 +268,27 @@ fun BookSection(
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             items(books) { book ->
-                BookCard(book = book)
+                BookCard(
+                    book = book,
+                    navController = navController
+                )
             }
         }
     }
 }
 
 @Composable
-fun BookCard(book: BookDto) {
+fun BookCard(
+    book: BookDto,
+    navController: NavHostController
+) {
     Column(
-        modifier = Modifier.width(120.dp)
+        modifier = Modifier
+            .width(120.dp)
+            .clickable {
+                // Navigate to BookDetail screen
+                navController.navigate("${Routes.BOOK_DETAIL}/${book.id}")
+            }
     ) {
         // Book Cover
         Box(

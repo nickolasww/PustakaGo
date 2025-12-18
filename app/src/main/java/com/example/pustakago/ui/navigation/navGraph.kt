@@ -7,11 +7,13 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import com.example.pustakago.ui.screen.group.GroupScreen
 import com.example.pustakago.ui.screen.home.HomeScreen
 import com.example.pustakago.ui.screen.mark.MarkScreen
 import com.example.pustakago.ui.screen.login.LoginScreen
 import com.example.pustakago.ui.screen.register.RegisterScreen
+import com.example.pustakago.ui.screen.bookdetail.BookDetailScreen
 
 @Composable
 fun NavigationGraph(
@@ -38,6 +40,18 @@ fun NavigationGraph(
         }
         composable(Routes.REGISTER){
             RegisterScreen(navController)
+        }
+        composable(
+            route = "${Routes.BOOK_DETAIL}/{${Routes.BOOK_DETAIL_ARG}}",
+            arguments = listOf(
+                navArgument(Routes.BOOK_DETAIL_ARG) { type = androidx.navigation.NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val bookId = backStackEntry.arguments?.getString(Routes.BOOK_DETAIL_ARG) ?: ""
+            BookDetailScreen(
+                bookId = bookId,
+                navController = navController
+            )
         }
     }
 }
