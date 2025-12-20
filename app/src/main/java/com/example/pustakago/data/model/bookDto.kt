@@ -16,9 +16,22 @@ data class BookDto(
     val isbn: String = "",
     val language: String = "",
     val format: String = "",
-    // Author information
-    val authorBio: String = "",
-    val authorImageUrl: String = "",
-    // Rating distribution
-    val ratingDistribution: Map<String, Int> = emptyMap()
-)
+    // Review text field (Firestore structure)
+    val reviewText: String = "",
+    // Author information - match Firestore structure exactly
+    val authorDetail: Map<String, String> = emptyMap(),
+    // Rating distribution (Firestore field name: ratingDetail)
+    val ratingDetail: Map<String, Int> = emptyMap()
+) {
+    // Helper function to get rating distribution (compatibility with existing code)
+    val ratingDistribution: Map<String, Int>
+        get() = ratingDetail
+
+    // Helper function to get author name from authorDetail
+    val authorDetailName: String
+        get() = authorDetail["nama"] ?: author
+
+    // Helper function to get bio from authorDetail
+    val authorDetailBio: String
+        get() = authorDetail["bio"] ?: ""
+}
