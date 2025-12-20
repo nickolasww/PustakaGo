@@ -193,4 +193,49 @@ class FirestoreDataSource {
             Result.failure(e)
         }
     }
+
+    // Bookmark functions
+    suspend fun addBookmark(userId: String, bookId: String): Result<Unit> {
+        return try {
+            val bookmarksCollection = firestore.collection("users").document(userId).collection("bookmarks")
+            bookmarksCollection.document(bookId).set(hashMapOf(
+                "bookId" to bookId,
+                "timestamp" to System.currentTimeMillis()
+            )).await()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun removeBookmark(userId: String, bookId: String): Result<Unit> {
+        return try {
+            val bookmarksCollection = firestore.collection("users").document(userId).collection("bookmarks")
+            bookmarksCollection.document(bookId).delete().await()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun getUserBookmarks(userId: String): Result<List<String>> {
+        return try {
+            val bookmarksCollection = firestore.collection("users").document(userId).collection("bookmarks")
+            val snapshot = bookmarksCollection.get().await()
+            val bookmarkIds = snapshot.documents.map { it.id }
+            Result.success(bookmarkIds)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun isBookmarked(userId: String, bookId: String): Result<Boolean> {
+        return try {
+            val bookmarksCollection = firestore.collection("users").document(userId).collection("bookmarks")
+            val doc = bookmarksCollection.document(bookId).get().await()
+            Result.success(doc.exists())
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 }

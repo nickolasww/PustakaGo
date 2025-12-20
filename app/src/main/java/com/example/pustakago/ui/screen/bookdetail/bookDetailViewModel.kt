@@ -43,6 +43,7 @@ class BookDetailViewModel(
                 }
                 if (user != null) {
                     checkUserReview()
+                    checkBookmarkStatus()
                 }
             }
         }
@@ -56,10 +57,11 @@ class BookDetailViewModel(
                 _state.update {
                     it.copy(
                         book = book,
-                        isLoading = false,
-                        isBookmarked = false // TODO: Check if book is bookmarked by user
+                        isLoading = false
                     )
                 }
+                // Check if book is bookmarked after loading
+                checkBookmarkStatus()
             }.onFailure { e ->
                 _state.update {
                     it.copy(
@@ -110,17 +112,85 @@ class BookDetailViewModel(
         }
     }
 
+    private fun checkBookmarkStatus() {
+        viewModelScope.launch {
+            val currentUser = authDataSource.getCurrentUser()
+            if (currentUser != null) {
+                firestoreDataSource.isBookmarked(currentUser.uid, bookId).onSuccess { isBookmarked ->
+                    _state.update {
+                        it.copy(isBookmarked = isBookmarked)
+                    }
+                }.onFailure { e ->
+                    // Handle error silently or show to user
+                    _state.update {
+                        it.copy(error = "Gagal memuat status bookmark: ${e.message}")
+                    }
+                }
+            }
+        }
+    }
+
     fun refreshBookDetail() {
         loadBookDetail()
         loadBookReviews()
         checkUserReview()
+        checkBookmarkStatus()
     }
 
     fun toggleBookmark() {
-        _state.update {
-            it.copy(isBookmarked = !it.isBookmarked)
+        val currentUser = authDataSource.getCurrentUser()
+        if (currentUser == null) {
+            _state.update { it.copy(error = "Harus login untuk men-bookmark buku") }
+            return
         }
-        // TODO: Implement bookmark logic with Firebase
+
+        val currentState = _state.value
+        val isCurrentlyBookmarked = currentState.isBookmarked
+
+        _state.update {
+            it.copy(isBookmarked = !isCurrentlyBookmarked)
+        }
+
+        // Implement bookmark logic with Firebase
+        viewModelScope.launch {
+            if (isCurrentlyBookmarked) {
+                // Remove bookmark
+                firestoreDataSource.removeBookmark(currentUser.uid, bookId).onSuccess {
+                    _state.update {
+                        it.copy(
+                            isBookmarked = false,
+                            error = null
+                        )
+                    }
+                }.onFailure { e ->
+                    // Revert on failure
+                    _state.update {
+                        it.copy(
+                            isBookmarked = true,
+                            error = "Gagal menghapus bookmark: ${e.message}"
+                        )
+                    }
+                }
+            } else {
+                // Add bookmark
+                firestoreDataSource.addBookmark(currentUser.uid, bookId).onSuccess {
+                    _state.update {
+                        it.copy(
+                            isBookmarked = true,
+                            error = null
+                        )
+                    }
+                }.onFailure { e ->
+                    // Revert on failure
+                    _state.update {
+                        it.copy(
+                            isBookmarked = false,
+                            error = "Gagal menambahkan bookmark: ${e.message}"
+                        )
+                    }
+                }
+            }
+        }
     }
 
     fun clearError() {
