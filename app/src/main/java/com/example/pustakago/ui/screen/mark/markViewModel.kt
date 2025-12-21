@@ -2,6 +2,8 @@ package com.example.pustakago.ui.screen.mark
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.pustakago.data.event.BookmarkEvent
+import com.example.pustakago.data.event.EventBus
 import com.example.pustakago.data.model.BookDto
 import com.example.pustakago.data.remote.firebase.AuthDataSource
 import com.example.pustakago.data.remote.firebase.FirestoreDataSource
@@ -21,6 +23,7 @@ class MarkViewModel(
     init {
         checkAuthState()
         observeAuthState()
+        observeBookmarkEvents()
         loadBookmarkedBooks()
     }
 
@@ -49,6 +52,37 @@ class MarkViewModel(
                     loadBookmarkedBooks()
                 } else {
                     _state.update { it.copy(bookmarkedBooks = emptyList()) }
+                }
+            }
+        }
+    }
+
+    /**
+     * Listen for bookmark events from other ViewModels (like BookDetailViewModel)
+     * This enables real-time synchronization between bookmark actions
+     */
+    private fun observeBookmarkEvents() {
+        viewModelScope.launch {
+            EventBus.bookmarkEvents.collect { event ->
+                when (event) {
+                    is BookmarkEvent.BookmarkAdded -> {
+                        // A book was bookmarked from another screen (e.g., BookDetail)
+                        // We need to refresh our bookmarked books list
+                        loadBookmarkedBooks()
+                    }
+                    is BookmarkEvent.BookmarkRemoved -> {
+                        // A book was unbookmarked from another screen (e.g., BookDetail)
+                        // Remove it from our local list immediately for better UX
+                        _state.update { currentState ->
+                            currentState.copy(
+                                bookmarkedBooks = currentState.bookmarkedBooks.filter { book ->
+                                    book.id != event.bookId
+                                }
+                            )
+                        }
+                        // Also refresh from server to ensure consistency
+                        loadBookmarkedBooks()
+                    }
                 }
             }
         }
@@ -125,6 +159,9 @@ class MarkViewModel(
                             bookmarkedBooks = it.bookmarkedBooks.filter { book -> book.id != bookId }
                         )
                     }
+
+                    // Emit event to notify other ViewModels
+                    EventBus.emitBookmarkEvent(BookmarkEvent.BookmarkRemoved(bookId))
                 } else {
                     _state.update {
                         it.copy(error = "Gagal menghapus bookmark")

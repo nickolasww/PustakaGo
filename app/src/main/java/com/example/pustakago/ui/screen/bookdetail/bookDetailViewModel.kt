@@ -2,6 +2,8 @@ package com.example.pustakago.ui.screen.bookdetail
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.pustakago.data.event.BookmarkEvent
+import com.example.pustakago.data.event.EventBus
 import com.example.pustakago.data.model.ReviewDto
 import com.example.pustakago.data.remote.firebase.AuthDataSource
 import com.example.pustakago.data.remote.firebase.FirestoreDataSource
@@ -162,6 +164,8 @@ class BookDetailViewModel(
                             error = null
                         )
                     }
+                    // Emit event to notify other ViewModels
+                    EventBus.emitBookmarkEvent(BookmarkEvent.BookmarkRemoved(bookId))
                 }.onFailure { e ->
                     // Revert on failure
                     _state.update {
@@ -180,6 +184,8 @@ class BookDetailViewModel(
                             error = null
                         )
                     }
+                    // Emit event to notify other ViewModels
+                    EventBus.emitBookmarkEvent(BookmarkEvent.BookmarkAdded(bookId))
                 }.onFailure { e ->
                     // Revert on failure
                     _state.update {
