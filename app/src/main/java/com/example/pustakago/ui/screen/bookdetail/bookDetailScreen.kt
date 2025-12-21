@@ -32,6 +32,7 @@ import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import com.example.pustakago.data.model.BookDto
 import com.example.pustakago.ui.screen.bookdetail.components.ReviewDialog
+import com.example.pustakago.ui.navigation.Routes
 import com.example.pustakago.ui.theme.Poppins
 import com.example.pustakago.ui.theme.PustakaGoTheme
 
@@ -130,7 +131,10 @@ fun BookDetailScreen(
                 BookDetailContent(
                     book = state.book!!,
                     modifier = Modifier.weight(1f),
-                    viewModel = viewModel
+                    viewModel = viewModel,
+                    onReadNow = {
+                        navController.navigate("${Routes.BOOK_PAGES}/$bookId")
+                    }
                 )
             }
         }
@@ -141,7 +145,8 @@ fun BookDetailScreen(
 fun BookDetailContent(
     book: BookDto,
     modifier: Modifier = Modifier,
-    viewModel: BookDetailViewModel
+    viewModel: BookDetailViewModel,
+    onReadNow: () -> Unit = {}
 ) {
     val state by viewModel.state.collectAsState()
 
@@ -164,7 +169,7 @@ fun BookDetailContent(
         Spacer(modifier = Modifier.height(24.dp))
 
         // Section 3: Read Button
-        ReadNowButton()
+        ReadNowButton(onClick = onReadNow)
         Spacer(modifier = Modifier.height(24.dp))
 
         // Section 4: About Book
@@ -321,9 +326,9 @@ fun StatisticsRow(
 }
 
 @Composable
-fun ReadNowButton() {
+fun ReadNowButton(onClick: () -> Unit = {}) {
     Button(
-        onClick = { /* TODO: Navigate to reader */ },
+        onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
             .height(56.dp),

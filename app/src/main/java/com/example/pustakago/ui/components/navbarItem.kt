@@ -8,6 +8,8 @@ import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material.icons.outlined.Groups
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.outlined.Description
 
 sealed class BottomNavItem(
     val route: String,
@@ -20,6 +22,12 @@ sealed class BottomNavItem(
         label = "Beranda",
         selectedIcon = Icons.Filled.Home,
         unselectedIcon = Icons.Outlined.Home
+    )
+    object Berita : BottomNavItem(
+        route = "berita",
+        label = "Berita",
+        selectedIcon = Icons.Filled.Description,
+        unselectedIcon = Icons.Outlined.Description
     )
     object Group : BottomNavItem(
         route = "group",

@@ -1,6 +1,7 @@
 package com.example.pustakago.data.remote.firebase
 
 import com.example.pustakago.data.model.BookDto
+import com.example.pustakago.data.model.BookPageDto
 import com.example.pustakago.data.model.ReviewDto
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
@@ -183,7 +184,7 @@ class FirestoreDataSource {
                 "reviewText" to newReviewText
             )
 
-            booksCollection
+           booksCollection
                 .document(reviewId)
                 .update(updates)
                 .await()
@@ -234,6 +235,40 @@ class FirestoreDataSource {
             val bookmarksCollection = firestore.collection("users").document(userId).collection("bookmarks")
             val doc = bookmarksCollection.document(bookId).get().await()
             Result.success(doc.exists())
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    // Book Pages functions
+    private val bookPagesCollection = firestore.collection("books_pages")
+
+    suspend fun getBookPages(bookId: String): Result<List<BookPageDto>> {
+        return try {
+            val snapshot = bookPagesCollection
+                .whereEqualTo("booksId", bookId)
+                .get()
+                .await()
+            val pages = snapshot.documents.mapNotNull { doc ->
+                doc.toObject(BookPageDto::class.java)?.copy(id = doc.id)
+            }.sortedBy { it.pageNumber } // Sort locally to avoid composite index requirement
+            Result.success(pages)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun getBookPage(bookId: String, pageNumber: Int): Result<BookPageDto?> {
+        return try {
+            val snapshot = bookPagesCollection
+                .whereEqualTo("booksId", bookId)
+                .whereEqualTo("pageNumber", pageNumber)
+                .get()
+                .await()
+            val page = snapshot.documents.firstOrNull()?.let { doc ->
+                doc.toObject(BookPageDto::class.java)?.copy(id = doc.id)
+            }
+            Result.success(page)
         } catch (e: Exception) {
             Result.failure(e)
         }

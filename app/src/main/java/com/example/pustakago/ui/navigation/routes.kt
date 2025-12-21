@@ -8,4 +8,6 @@ object Routes{
     const val MARK = "mark"
     const val BOOK_DETAIL = "bookDetail"
     const val BOOK_DETAIL_ARG = "bookId"
+    const val BOOK_PAGES = "bookPages"
+    const val BOOK_PAGES_ARG = "bookId"
 }

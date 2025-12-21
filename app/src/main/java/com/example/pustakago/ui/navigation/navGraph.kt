@@ -14,6 +14,7 @@ import com.example.pustakago.ui.screen.mark.MarkScreen
 import com.example.pustakago.ui.screen.login.LoginScreen
 import com.example.pustakago.ui.screen.register.RegisterScreen
 import com.example.pustakago.ui.screen.bookdetail.BookDetailScreen
+import com.example.pustakago.ui.screen.bookpages.BookPagesScreen
 
 @Composable
 fun NavigationGraph(
@@ -49,6 +50,18 @@ fun NavigationGraph(
         ) { backStackEntry ->
             val bookId = backStackEntry.arguments?.getString(Routes.BOOK_DETAIL_ARG) ?: ""
             BookDetailScreen(
+                bookId = bookId,
+                navController = navController
+            )
+        }
+        composable(
+            route = "${Routes.BOOK_PAGES}/{${Routes.BOOK_PAGES_ARG}}",
+            arguments = listOf(
+                navArgument(Routes.BOOK_PAGES_ARG) { type = androidx.navigation.NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val bookId = backStackEntry.arguments?.getString(Routes.BOOK_PAGES_ARG) ?: ""
+            BookPagesScreen(
                 bookId = bookId,
                 navController = navController
             )
