@@ -4,12 +4,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.Groups
+import androidx.compose.material.icons.filled.Newspaper
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material.icons.outlined.Groups
+import androidx.compose.material.icons.outlined.Newspaper
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.material.icons.filled.Description
-import androidx.compose.material.icons.outlined.Description
 
 sealed class BottomNavItem(
     val route: String,
@@ -23,11 +23,11 @@ sealed class BottomNavItem(
         selectedIcon = Icons.Filled.Home,
         unselectedIcon = Icons.Outlined.Home
     )
-    object Berita : BottomNavItem(
-        route = "berita",
+    object News : BottomNavItem(
+        route = "news",
         label = "Berita",
-        selectedIcon = Icons.Filled.Description,
-        unselectedIcon = Icons.Outlined.Description
+        selectedIcon = Icons.Filled.Newspaper,
+        unselectedIcon = Icons.Outlined.Newspaper
     )
     object Group : BottomNavItem(
         route = "group",

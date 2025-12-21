@@ -3,12 +3,15 @@ package com.example.pustakago.data.remote.firebase
 import com.example.pustakago.data.model.BookDto
 import com.example.pustakago.data.model.BookPageDto
 import com.example.pustakago.data.model.ReviewDto
+import com.example.pustakago.data.model.NewsDto
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
+import java.util.Date
 
 class FirestoreDataSource {
     private val firestore = FirebaseFirestore.getInstance()
     private val booksCollection = firestore.collection("books")
+    private val newsCollection = firestore.collection("news")
 
     suspend fun getAllBooks(): Result<List<BookDto>> {
         return try {
@@ -65,17 +68,12 @@ class FirestoreDataSource {
     // Review functions - updated to match Firestore structure where reviews are stored in book documents
     suspend fun getBookReviews(bookId: String): Result<List<ReviewDto>> {
         return try {
-            // Since reviews are stored directly in the book document, we need to get the book first
             val bookDoc = booksCollection.document(bookId).get().await()
             val book = bookDoc.toObject(BookDto::class.java) ?: return Result.failure(Exception("Book not found"))
 
-            // For now, return empty list as reviews are stored in book document structure
-            // This can be enhanced later to extract reviews from the book document
             val reviews = mutableListOf<ReviewDto>()
 
-            // If book has reviewText, create a sample review
             if (book.description.isNotEmpty()) {
-                // This is a simplified approach - in real implementation, reviews would be stored as array
                 reviews.add(
                     ReviewDto(
                         id = bookId,
@@ -98,16 +96,13 @@ class FirestoreDataSource {
 
     suspend fun addReview(review: ReviewDto): Result<String> {
         return try {
-            // Since reviews are stored in book documents, we update the book document
             val bookDoc = booksCollection.document(review.bookId).get().await()
             val currentBook = bookDoc.toObject(BookDto::class.java) ?: return Result.failure(Exception("Book not found"))
 
-            // For this implementation, we'll update the book's review count and rating
             val newReviewCount = currentBook.reviewCount + 1
             val newTotalRating = (currentBook.rating * currentBook.reviewCount) + review.rating
             val newAverageRating = newTotalRating.toDouble() / newReviewCount
 
-            // Update rating distribution
             val currentDistribution = currentBook.ratingDetail.toMutableMap()
             val starKey = review.rating.toString()
             currentDistribution[starKey] = (currentDistribution[starKey] ?: 0) + 1
@@ -162,11 +157,8 @@ class FirestoreDataSource {
 
     suspend fun getUserReviewForBook(bookId: String, userId: String): Result<ReviewDto?> {
         return try {
-            // Since reviews are stored in book documents, we check the book document
             val bookDoc = booksCollection.document(bookId).get().await()
             val book = bookDoc.toObject(BookDto::class.java) ?: return Result.failure(Exception("Book not found"))
-
-            // For this implementation, return null as user-specific reviews would need different storage structure
             Result.success(null)
         } catch (e: Exception) {
             Result.failure(e)
@@ -269,6 +261,130 @@ class FirestoreDataSource {
                 doc.toObject(BookPageDto::class.java)?.copy(id = doc.id)
             }
             Result.success(page)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun getAllNews(): Result<List<NewsDto>> {
+        return try {
+            val snapshot = newsCollection.get().await()
+            val news = snapshot.documents.mapNotNull { doc ->
+                doc.toObject(NewsDto::class.java)?.copy(id = doc.id)
+            }
+            Result.success(news)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun getBreakingNews(): Result<List<NewsDto>> {
+        return try {
+            val snapshot = newsCollection
+                .whereEqualTo("isBreaking", true)
+                .get()
+                .await()
+            val news = snapshot.documents.mapNotNull { doc ->
+                doc.toObject(NewsDto::class.java)?.copy(id = doc.id)
+            }
+            Result.success(news)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun getLatestNews(): Result<List<NewsDto>> {
+        return try {
+            val snapshot = newsCollection
+                .orderBy("publishedAt", com.google.firebase.firestore.Query.Direction.DESCENDING)
+                .limit(10)
+                .get()
+                .await()
+            val news = snapshot.documents.mapNotNull { doc ->
+                doc.toObject(NewsDto::class.java)?.copy(id = doc.id)
+            }
+            Result.success(news)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun getTrendingNews(): Result<List<NewsDto>> {
+        return try {
+            val snapshot = newsCollection
+                .orderBy("viewCount", com.google.firebase.firestore.Query.Direction.DESCENDING)
+                .limit(10)
+                .get()
+                .await()
+            val news = snapshot.documents.mapNotNull { doc ->
+                doc.toObject(NewsDto::class.java)?.copy(id = doc.id)
+            }
+            Result.success(news)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun getNewsByCategory(category: String): Result<List<NewsDto>> {
+        return try {
+            val snapshot = newsCollection
+                .whereEqualTo("category", category)
+                .orderBy("publishedAt", com.google.firebase.firestore.Query.Direction.DESCENDING)
+                .get()
+                .await()
+            val news = snapshot.documents.mapNotNull { doc ->
+                doc.toObject(NewsDto::class.java)?.copy(id = doc.id)
+            }
+            Result.success(news)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun getNewsById(newsId: String): Result<NewsDto?> {
+        return try {
+            val doc = newsCollection.document(newsId).get().await()
+            val news = doc.toObject(NewsDto::class.java)?.copy(id = doc.id)
+            Result.success(news)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun searchNews(query: String): Result<List<NewsDto>> {
+        return try {
+            val snapshot = newsCollection.get().await()
+            val news = snapshot.documents.mapNotNull { doc ->
+                doc.toObject(NewsDto::class.java)?.copy(id = doc.id)
+            }.filter {
+                it.title.contains(query, ignoreCase = true) ||
+                        it.content.contains(query, ignoreCase = true) ||
+                        it.category.contains(query, ignoreCase = true)
+            }
+            Result.success(news)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun incrementNewsViewCount(newsId: String): Result<Unit> {
+        return try {
+            val docRef = newsCollection.document(newsId)
+            val doc = docRef.get().await()
+            val currentViewCount = doc.getLong("viewCount") ?: 0
+            docRef.update("viewCount", currentViewCount + 1).await()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun createSampleNews(newsList: List<NewsDto>): Result<Unit> {
+        return try {
+            newsList.forEach { news ->
+                newsCollection.document(news.id).set(news)
+            }
+            Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)
         }

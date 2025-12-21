@@ -15,6 +15,8 @@ import com.example.pustakago.ui.screen.login.LoginScreen
 import com.example.pustakago.ui.screen.register.RegisterScreen
 import com.example.pustakago.ui.screen.bookdetail.BookDetailScreen
 import com.example.pustakago.ui.screen.bookpages.BookPagesScreen
+import com.example.pustakago.ui.screen.news.NewsScreen
+
 
 @Composable
 fun NavigationGraph(
@@ -41,6 +43,9 @@ fun NavigationGraph(
         }
         composable(Routes.REGISTER){
             RegisterScreen(navController)
+        }
+        composable(Routes.NEWS){
+            NewsScreen(navController)
         }
         composable(
             route = "${Routes.BOOK_DETAIL}/{${Routes.BOOK_DETAIL_ARG}}",

@@ -23,7 +23,7 @@ val NavBarBlue = Color(0xFF0096DB)
 fun Navbar(navController: NavHostController) {
     val items = listOf(
         BottomNavItem.Home,
-        BottomNavItem.Berita,
+        BottomNavItem.News,
         BottomNavItem.Group,
         BottomNavItem.Mark
     )
